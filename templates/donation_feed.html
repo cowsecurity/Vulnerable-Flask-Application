@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation Feed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .request {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .request h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .request p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .request form {
+            margin-top: 10px;
+        }
+        .request input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .request input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .request input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .completed {
+            background-color: #e6ffe6;
+            border: 1px solid #b3ffb3;
+        }
+        .completed p {
+            font-weight: bold;
+            color: #009900;
+        }
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #333;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Donation Feed</h1>
+        <div>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <p class="{{ category }}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+        <a href="{{ url_for('create_donation_request') }}" class="link">Create Donation Request</a>
+        <br><br>
+        <h2>Active Requests</h2>
+        {% for request in active_requests %}
+            <div class="request">
+                <h3>{{ request['username'] }} needs ${{ request['amount'] }}</h3>
+                <p>{{ request['description'] }}</p>
+                <p>Created at: {{ request['created_at'] }}</p>
+                {% if not session['is_admin'] %}
+                    <form action="{{ url_for('donate', request_id=request['id']) }}" method="post">
+                        <input type="number" name="amount" step="0.01" min="0.01" max="{{ request['amount'] }}" required>
+                        <input type="submit" value="Donate">
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <h2>Completed Requests</h2>
+        {% for request in completed_requests %}
+            <div class="request completed">
+                <h3>{{ request['username'] }} received ${{ request['amount'] }}</h3>
+                <p>{{ request['description'] }}</p>
+                <p>Created at: {{ request['created_at'] }}</p>
+                <p><strong>Status: Completed</strong></p>
+            </div>
+        {% endfor %}
+        <a href="{{ url_for('index') }}" class="link">Back to Home</a>
+    </div>
+</body>
+</html>

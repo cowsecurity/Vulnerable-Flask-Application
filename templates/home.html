@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .error {
+            color: red;
+        }
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #333;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ username }}!</h1>
+        <p>Your balance: ${{ balance }}</p>
+        {% if is_banned %}
+            <p class="error">Your account is currently banned. You cannot create donation requests or make donations.</p>
+        {% endif %}
+        <a href="{{ url_for('view_profile') }}" class="link">View Profile</a>
+        <a href="{{ url_for('donation_feed') }}" class="link">Donation Feed</a>
+        {% if is_admin %}
+            <a href="{{ url_for('admin_panel') }}" class="link">Admin Panel</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}" class="link">Logout</a>
+    </div>
+</body>
+</html>
