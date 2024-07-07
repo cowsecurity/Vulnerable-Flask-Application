@@ -177,9 +177,11 @@ def donation_feed():
     conn = get_db_connection()
     active_requests = conn.execute('SELECT * FROM donation_requests WHERE status = "active" ORDER BY created_at DESC').fetchall()
     completed_requests = conn.execute('SELECT * FROM donation_requests WHERE status = "completed" ORDER BY created_at DESC').fetchall()
+    comments = conn.execute('SELECT * FROM comments ORDER BY created_at DESC').fetchall()
+    
     conn.close()
     
-    return render_template('donation_feed.html', active_requests=active_requests, completed_requests=completed_requests)
+    return render_template('donation_feed.html', active_requests=active_requests, completed_requests=completed_requests, comments=comments)
 
 @app.route('/create_donation_request', methods=['GET', 'POST'])
 def create_donation_request():
@@ -318,6 +320,66 @@ def unban_user(username):
     
     flash(f'User {username} has been unbanned.', 'success')
     return redirect(url_for('admin_panel'))
+
+@app.route('/add_comment/<int:request_id>', methods=['POST'])
+def add_comment(request_id):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    content = request.form['content']
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO comments (donation_request_id, username, content) VALUES (?, ?, ?)',
+                   (request_id, session['username'], content))
+    conn.commit()
+    conn.close()
+    
+    flash('Comment added successfully', 'success')
+    return redirect(url_for('donation_feed'))
+
+@app.route('/edit_comment/<int:comment_id>', methods=['GET', 'POST'])
+def edit_comment(comment_id):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    comment = conn.execute('SELECT * FROM comments WHERE id = ?', (comment_id,)).fetchone()
+    
+    if not comment:
+        flash('Comment not found!', 'error')
+        return redirect(url_for('donation_feed'))
+    
+    if request.method == 'POST':
+        new_content = request.form['content']
+        cursor = conn.cursor()
+        cursor.execute('UPDATE comments SET content = ? WHERE id = ?', (new_content, comment_id))
+        conn.commit()
+        flash('Comment updated successfully', 'success')
+        return redirect(url_for('donation_feed'))
+    
+    conn.close()
+    return render_template('edit_comment.html', comment=comment)
+
+@app.route('/delete_comment/<int:comment_id>', methods=['POST'])
+def delete_comment(comment_id):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    comment = conn.execute('SELECT * FROM comments WHERE id = ?', (comment_id,)).fetchone()
+    
+    if not comment:
+        flash('Comment not found!', 'error')
+        return redirect(url_for('donation_feed'))
+    
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM comments WHERE id = ?', (comment_id,))
+    conn.commit()
+    conn.close()
+    
+    flash('Comment deleted successfully', 'success')
+    return redirect(url_for('donation_feed'))
 
 def init_db():
     conn = get_db_connection()

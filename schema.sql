@@ -24,5 +24,15 @@ CREATE TABLE IF NOT EXISTS donation_requests (
     FOREIGN KEY (username) REFERENCES users(username)
 );
 
+CREATE TABLE IF NOT EXISTS comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    donation_request_id INTEGER NOT NULL,
+    username TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (donation_request_id) REFERENCES donation_requests (id),
+    FOREIGN KEY (username) REFERENCES users (username)
+);
+
 INSERT OR IGNORE INTO admin_users (username, password, balance, is_admin) VALUES ('admin', 'admin', 10000000000000000.0, 1);
 INSERT OR IGNORE INTO users (username, password, balance) VALUES ('testuser', 'password123', 1000.00);
