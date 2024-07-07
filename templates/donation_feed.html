@@ -101,7 +101,9 @@
                 {% endif %}
             {% endwith %}
         </div>
-        <a href="{{ url_for('create_donation_request') }}" class="link">Create Donation Request</a>
+        {% if not session['is_admin'] %}
+            <a href="{{ url_for('create_donation_request') }}" class="link">Create Donation Request</a>
+        {% endif %}
         <br><br>
         <h2>Active Requests</h2>
         {% for request in active_requests %}
